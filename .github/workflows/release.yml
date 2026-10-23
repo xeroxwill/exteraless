@@ -11,9 +11,13 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: 'Post the APK to the Telegram channel'
+        description: 'Create a GitHub pre-release'
         type: boolean
         default: true
+      telegram:
+        description: 'Also post the APK to the Telegram channel'
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -122,7 +126,7 @@ jobs:
               gh release delete "$old" --yes --cleanup-tag
             done
       - name: Send APK to Telegram
-        if: ${{ (github.event_name != 'workflow_dispatch' || inputs.publish) && !contains(github.event.head_commit.message, '[skip publish]') }}
+        if: ${{ (github.event_name != 'workflow_dispatch' || inputs.telegram) && !contains(github.event.head_commit.message, '[skip publish]') }}
         env:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_API_ID: ${{ secrets.TG_API_ID }}
