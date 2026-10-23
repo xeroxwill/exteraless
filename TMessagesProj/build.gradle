@@ -89,11 +89,9 @@ android {
 
     // Целевые ABI. Ограничение живёт в ndk.abiFilters — этого требует Chaquopy;
     // см. комментарий у splits ниже.
-    // 32-битных ABI в списке нет намеренно: Chaquopy собирает Python 3.12 только
-    // под arm64-v8a и x86_64, и на armeabi-v7a конфигурация падает ещё до сборки
-    // («Python 3.12 is not available for the ABI»). Вернуть их можно только вместе
-    // с откатом Python до 3.11 — тогда та же минорная версия понадобится и на
-    // машине сборки, включая CI.
+    // CI выбирает один ABI через NATIVE_TARGET; для 32-битной полной сборки это
+    // NATIVE_TARGET=armeabi-v7a. Не добавляй 32-битный ABI в universal без
+    // проверки наличия соответствующего runtime у Chaquopy.
     def targetAbis
     if (nativeTarget == 'universal') {
         targetAbis = ['arm64-v8a', 'x86_64']
@@ -113,7 +111,7 @@ android {
     //     («Conflicting configuration ... cannot be present when splits abi
     //     filters are set»).
     // Поэтому раздельные APK получаются не сплитами, а отдельной сборкой на
-    // каждый ABI: NATIVE_TARGET=arm64-v8a, затем NATIVE_TARGET=x86_64.
+    // каждый ABI: передай нужный ABI через NATIVE_TARGET (например, armeabi-v7a).
     // Пустой NATIVE_TARGET даёт ОДИН APK с обоими ABI (~+51 МБ на второй
     // libtmessages.so) — о чём ниже предупреждение в лог.
     splits {
